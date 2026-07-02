@@ -140,14 +140,17 @@ function sanitize(text) {
 
 function renderTools() {
   const rail = byId("toolRail");
-  const allTools = toolCategories.flatMap((group) => group.tools);
+  const allTools = [...new Map(
+    toolCategories
+      .flatMap((group) => group.tools)
+      .map((tool) => [tool.name, tool])
+  ).values()];
   const logoSet = [...allTools, ...allTools];
   rail.innerHTML = `
     <div class="tool-track" aria-label="Tool logos">
       ${logoSet.map((tool) => `
-        <div class="tool-logo" title="${sanitize(tool.name)}">
+        <div class="tool-logo" title="${sanitize(tool.name)}" aria-label="${sanitize(tool.name)}">
           ${tool.icon ? `<img src="${sanitize(tool.icon)}" alt="${sanitize(tool.name)} logo" loading="lazy" width="600" height="600">` : `<span class="tool-icon-placeholder" aria-hidden="true">${sanitize(tool.name.charAt(0))}</span>`}
-          <span>${sanitize(tool.name)}</span>
         </div>
       `).join("")}
     </div>
