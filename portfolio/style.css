@@ -2038,7 +2038,7 @@ main > .section:not(.hero) {
   background:
     linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.92), transparent) 0 0 / 18% 100% no-repeat,
     linear-gradient(90deg, var(--pink), var(--purple));
-  animation: processLight 2.8s linear infinite;
+  animation: processLight 4.8s linear infinite;
 }
 
 .process-list li {
@@ -2067,32 +2067,32 @@ main > .section:not(.hero) {
     0 0 0 5px rgba(255, 47, 146, 0.07),
     0 0 24px rgba(255, 47, 146, 0.34);
   transform: scale(1);
-  animation: processIconSignal 2.8s linear infinite;
+  animation: processIconSignal 4.8s linear infinite;
   z-index: 1;
 }
 
 .process-list li:nth-child(1) .process-icon {
-  animation-delay: 0.06s;
+  animation-delay: 0.1s;
 }
 
 .process-list li:nth-child(2) .process-icon {
-  animation-delay: 0.5s;
+  animation-delay: 0.86s;
 }
 
 .process-list li:nth-child(3) .process-icon {
-  animation-delay: 0.94s;
+  animation-delay: 1.62s;
 }
 
 .process-list li:nth-child(4) .process-icon {
-  animation-delay: 1.38s;
+  animation-delay: 2.38s;
 }
 
 .process-list li:nth-child(5) .process-icon {
-  animation-delay: 1.82s;
+  animation-delay: 3.14s;
 }
 
 .process-list li:nth-child(6) .process-icon {
-  animation-delay: 2.26s;
+  animation-delay: 3.9s;
 }
 
 .process-icon svg {
