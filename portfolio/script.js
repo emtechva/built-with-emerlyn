@@ -189,9 +189,6 @@ function renderProjects() {
           <div class="project-tools">
             ${project.tools.slice(0, 4).map((tool) => `<span class="project-tool">${sanitize(tool)}</span>`).join("")}
           </div>
-          <div class="project-actions">
-            <span class="project-open">${sanitize(project.actionLabel || "Click for details")}</span>
-          </div>
         </article>
       `).join("")}
     </div>
