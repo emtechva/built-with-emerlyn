@@ -18,10 +18,20 @@ No frameworks, packages, or build tools are required.
 
 1. Open this repository in VS Code.
 2. Install the Live Server extension if it is not installed yet.
-3. Right-click `portfolio/index.html`.
+3. Right-click `Built-with-emerlyn/index.html`.
 4. Choose `Open with Live Server`.
 
-You can also open `portfolio/index.html` directly in a browser, but Live Server is better for testing navigation, embeds, and local paths.
+You can also open `Built-with-emerlyn/index.html` directly in a browser, but Live Server is better for testing navigation, embeds, and local paths.
+
+## GitHub Pages
+
+This repo includes a GitHub Actions workflow at `.github/workflows/deploy-github-pages.yml`.
+It publishes the `Built-with-emerlyn/` folder as the GitHub Pages site.
+
+In GitHub, set:
+
+- Pages source: `GitHub Actions`
+- Published URL: `https://emtechva.github.io/built-with-emerlyn/`
 
 ## Content to replace later
 
