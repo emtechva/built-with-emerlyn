@@ -56,7 +56,8 @@ const projects = [
     label: "Practice Project",
     type: "Practice Portfolio Project",
     category: "GoHighLevel Funnel & CRM Automation",
-    filter: "gohighlevel",
+    categories: ["lead-crm", "booking"],
+    serviceLabel: "Lead & CRM, Booking Automation",
     description: "A complete dental booking and CRM automation system covering appointment confirmation, timed reminders, status tracking, rescheduling, no-show recovery, and patient nurture follow-up.",
     tools: ["GoHighLevel", "CRM Automation", "Booking Funnel", "Email & SMS"],
     image: "assets/projects/smilecraft/dental.png",
@@ -78,7 +79,8 @@ const projects = [
     id: "buildright",
     title: "BuildRight Construction Lead Management",
     category: "Zapier Automation",
-    filter: "zapier",
+    categories: ["lead-crm", "data-reporting"],
+    serviceLabel: "Lead & CRM, Data & Reporting",
     description: "A construction lead intake system that captures form submissions, stores leads in Airtable, sends client confirmations, notifies the team in Slack, and manages follow-up communication.",
     tools: ["Zapier", "Typeform", "Airtable", "Gmail", "Slack"],
     problem: "Construction inquiries can arrive through forms and require consistent storage, team alerts, and client confirmation.",
@@ -93,7 +95,8 @@ const projects = [
     id: "ai-agent-scheduling",
     title: "AI Agent Scheduling Setup",
     category: "Telegram Booking Assistant and Zapier AI Agent Workflow",
-    filter: "zapier",
+    categories: ["booking", "ai-workflows"],
+    serviceLabel: "Booking Automation, AI Workflows",
     description: "An AI-powered appointment scheduling system that automates bookings, rescheduling, cancellations, reminders, and client communication through Telegram.",
     tools: ["Zapier AI Agent", "Telegram", "Airtable", "Google Calendar", "Gmail", "Slack"],
     image: "assets/projects/aiagent-scheduling-setup/tg-aiagent.png",
@@ -127,7 +130,8 @@ const projects = [
     id: "email-routing",
     title: "AI Email Classification and Routing",
     category: "Make.com and Gemini AI",
-    filter: "make",
+    categories: ["ai-workflows", "data-reporting"],
+    serviceLabel: "AI Workflows, Data & Reporting",
     description: "An AI-assisted email workflow that reads incoming messages, identifies their purpose, routes them to the appropriate team or folder, logs the activity, and sends internal alerts.",
     tools: ["Make.com", "Gemini AI", "Gmail", "Slack", "Google Sheets"],
     problem: "Incoming messages can require sorting, routing, logging, and internal alerts.",
@@ -142,7 +146,8 @@ const projects = [
     id: "construction-automation",
     title: "Construction Estimation and Resource Management",
     category: "n8n Automation",
-    filter: "n8n",
+    categories: ["ai-workflows", "data-reporting"],
+    serviceLabel: "AI Workflows, Data & Reporting",
     description: "A document-processing and resource allocation workflow that organizes project files, extracts information with AI, updates project records, and checks staff availability.",
     tools: ["n8n", "Google Drive", "Google Sheets", "Gemini AI"],
     problem: "Project documents and resource information can be scattered across files, sheets, and team availability records.",
@@ -207,7 +212,17 @@ function renderProjects() {
   const grid = byId("projectGrid");
   const filtered = state.activeFilter === "all"
     ? projects
-    : projects.filter((project) => project.filter === state.activeFilter);
+    : projects.filter((project) => project.categories?.includes(state.activeFilter));
+
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="project-empty" role="status">
+        <strong>No case study in this service yet.</strong>
+        <span>Community operations work can be added here when a verified project is available.</span>
+      </div>
+    `;
+    return;
+  }
 
   const railProjects = [...filtered, ...filtered];
   grid.innerHTML = `
@@ -215,13 +230,18 @@ function renderProjects() {
       ${railProjects.map((project) => `
         <article class="project-card reveal" data-project-card data-project-id="${sanitize(project.id)}" tabindex="0" role="button" aria-label="Open ${sanitize(project.title)} case study">
           <div class="project-preview">
-            ${project.image ? `<img src="${sanitize(project.image)}" alt="${sanitize(project.imageAlt || `${project.title} preview`)}" loading="lazy" width="1920" height="1080">` : `<span>${sanitize(project.category)}</span>`}
+            ${project.image ? `<img src="${sanitize(project.image)}" alt="${sanitize(project.imageAlt || `${project.title} preview`)}" loading="lazy" width="1920" height="1080">` : `<span>${sanitize(project.serviceLabel || project.title)}</span>`}
           </div>
-          <div class="category-pill">${sanitize(project.label || project.category)}</div>
+          <div class="category-pill">${sanitize(project.label || project.type || "Portfolio Project")}</div>
           <h3>${sanitize(project.title)}</h3>
           <p>${sanitize(project.description)}</p>
+          <div class="project-service">
+            <span>Service</span>
+            <strong>${sanitize(project.serviceLabel || project.category)}</strong>
+          </div>
           <div class="project-tools">
-            ${project.tools.slice(0, 4).map((tool) => `<span class="project-tool">${sanitize(tool)}</span>`).join("")}
+            <span class="project-tools-label">Tools</span>
+            ${project.tools.map((tool) => `<span class="project-tool">${sanitize(tool)}</span>`).join("")}
           </div>
         </article>
       `).join("")}
@@ -394,10 +414,18 @@ function initNavigation() {
 
 function initFilters() {
   const buttons = [...document.querySelectorAll("[data-filter]")];
+  function updateButtons(activeButton) {
+    buttons.forEach((item) => {
+      const isActive = item === activeButton;
+      item.classList.toggle("is-active", isActive);
+      item.setAttribute("aria-pressed", String(isActive));
+    });
+  }
+
   buttons.forEach((button) => {
     button.addEventListener("click", () => {
       state.activeFilter = button.dataset.filter;
-      buttons.forEach((item) => item.classList.toggle("is-active", item === button));
+      updateButtons(button);
       renderProjects();
       observeReveals();
     });

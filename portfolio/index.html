@@ -478,12 +478,14 @@
           <h2 class="section-title">Automation projects and case studies</h2>
           <p class="section-description">Verified project titles, categories, tools, and descriptions currently available.</p>
         </div>
-        <div class="filters reveal" role="group" aria-label="Filter case studies">
-          <button class="filter-button is-active" type="button" data-filter="all">All</button>
-          <button class="filter-button" type="button" data-filter="n8n">n8n</button>
-          <button class="filter-button" type="button" data-filter="zapier">Zapier</button>
-          <button class="filter-button" type="button" data-filter="make">Make.com</button>
-          <button class="filter-button" type="button" data-filter="gohighlevel">GoHighLevel</button>
+        <p class="filter-label reveal">Explore by service</p>
+        <div class="filters reveal" role="group" aria-label="Filter case studies by service">
+          <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="filter-button" type="button" data-filter="lead-crm" aria-pressed="false">Lead &amp; CRM</button>
+          <button class="filter-button" type="button" data-filter="booking" aria-pressed="false">Booking</button>
+          <button class="filter-button" type="button" data-filter="ai-workflows" aria-pressed="false">AI Workflows</button>
+          <button class="filter-button" type="button" data-filter="data-reporting" aria-pressed="false">Data &amp; Reporting</button>
+          <button class="filter-button" type="button" data-filter="community-operations" aria-pressed="false">Community Operations</button>
         </div>
         <div class="project-grid" id="projectGrid" aria-live="polite"></div>
       </div>

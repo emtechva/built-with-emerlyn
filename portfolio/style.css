@@ -2165,10 +2165,24 @@ main > .section:not(.hero) {
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 10px 8px;
+}
+
+.filter-label {
+  margin: -8px 0 -4px;
+  color: var(--text-muted);
+  font-family: var(--mono-font);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .filter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 40px;
   padding: 0 15px;
   border: 1px solid var(--border);
@@ -2192,10 +2206,31 @@ main > .section:not(.hero) {
   background: linear-gradient(135deg, var(--magenta), var(--deep-purple));
 }
 
+.filter-button.is-active::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 10px rgba(255, 247, 251, 0.75);
+}
+
 .filter-button.is-active:hover,
 .filter-button.is-active:focus-visible {
   background: linear-gradient(135deg, var(--magenta), var(--deep-purple));
   filter: brightness(1.1);
+}
+
+@media (max-width: 640px) {
+  .filters {
+    gap: 8px;
+  }
+
+  .filter-button {
+    min-height: 38px;
+    padding-inline: 12px;
+    font-size: 0.86rem;
+  }
 }
 
 .project-grid {
@@ -2217,6 +2252,27 @@ main > .section:not(.hero) {
 
 .testimonial-track {
   animation: railSlideReverse 30s linear infinite;
+}
+
+.project-empty {
+  display: grid;
+  gap: 6px;
+  min-height: 160px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  align-content: center;
+}
+
+.project-empty strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.project-empty span {
+  color: var(--text-secondary);
+  line-height: 1.55;
 }
 
 .project-grid:hover .project-track,
@@ -2333,6 +2389,37 @@ main > .section:not(.hero) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.project-service {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.project-service span,
+.project-tools-label {
+  color: var(--text-muted);
+  font-family: var(--mono-font);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-service strong {
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.project-tools-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
 }
 
 .project-actions {
