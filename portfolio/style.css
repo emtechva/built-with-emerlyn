@@ -1031,6 +1031,16 @@ main > .section:not(.hero) {
   font-size: 0.9rem;
 }
 
+.hero-tools {
+  position: relative;
+  z-index: 1;
+  padding: clamp(10px, 2vw, 18px) 0 clamp(2.6rem, 5vw, 4.2rem);
+}
+
+.hero + .hero-tools {
+  margin-top: clamp(-1.75rem, -2vw, -0.75rem);
+}
+
 .about-grid,
 .contact-grid,
 .feedback-grid {
