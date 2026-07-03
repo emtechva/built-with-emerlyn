@@ -41,10 +41,10 @@
   --energy-violet: #8a5cff;
   --energy-purple: #6a1bff;
   --energy-blue: #4f8cff;
-  --ambient-route-opacity: 0.16;
-  --ambient-route-faint: 0.08;
-  --ambient-route-strong: 0.22;
-  --ambient-pulse-opacity: 0.82;
+  --ambient-route-opacity: 0.07;
+  --ambient-route-faint: 0.035;
+  --ambient-route-strong: 0.1;
+  --ambient-pulse-opacity: 0.34;
 }
 
 [data-theme="light"] {
@@ -78,10 +78,10 @@
   --energy-violet: #5b21b6;
   --energy-purple: #6a1bff;
   --energy-blue: #3265c9;
-  --ambient-route-opacity: 0.09;
-  --ambient-route-faint: 0.05;
-  --ambient-route-strong: 0.12;
-  --ambient-pulse-opacity: 0.42;
+  --ambient-route-opacity: 0.045;
+  --ambient-route-faint: 0.025;
+  --ambient-route-strong: 0.065;
+  --ambient-pulse-opacity: 0.2;
 }
 
 * {
@@ -113,8 +113,7 @@ body {
   contain: layout paint;
 }
 
-.circuit-layer,
-.pointer-trail-canvas {
+.circuit-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -122,11 +121,7 @@ body {
 }
 
 .circuit-layer {
-  opacity: 0.9;
-}
-
-.pointer-trail-canvas {
-  opacity: 0.92;
+  opacity: 0.64;
 }
 
 .circuit-path,
@@ -140,7 +135,7 @@ body {
   stroke: url("#routeGradientA");
   stroke-width: 1.15;
   opacity: var(--ambient-route-opacity);
-  filter: drop-shadow(0 0 7px rgba(255, 45, 187, 0.18));
+  filter: drop-shadow(0 0 5px rgba(255, 45, 187, 0.08));
 }
 
 .circuit-path:nth-child(even) {
@@ -157,7 +152,7 @@ body {
 
 .circuit-pulse {
   stroke: url("#routeGradientA");
-  stroke-width: 2.2;
+  stroke-width: 1.7;
   opacity: var(--ambient-pulse-opacity);
   stroke-dasharray: 42 980;
   filter: url("#circuitGlow");
@@ -199,17 +194,9 @@ body {
   filter: none;
 }
 
-[data-theme="light"] .pointer-trail-canvas {
-  opacity: 0.76;
-}
-
 @media (hover: none), (pointer: coarse) {
-  .pointer-trail-canvas {
-    display: none;
-  }
-
   .circuit-layer {
-    opacity: 0.48;
+    opacity: 0.36;
   }
 
   .circuit-path:nth-child(n + 6),
@@ -2044,7 +2031,7 @@ main > .section:not(.hero) {
 .process-list::before {
   content: "";
   position: absolute;
-  top: 22px;
+  top: 21px;
   left: 5%;
   right: 5%;
   height: 2px;
@@ -2058,21 +2045,39 @@ main > .section:not(.hero) {
   position: relative;
   display: grid;
   gap: 12px;
-  padding-top: 54px;
+  padding-top: 62px;
 }
 
-.process-list li::before {
-  content: "";
+.process-icon {
   position: absolute;
-  top: 10px;
+  top: 0;
   left: 0;
-  width: 24px;
-  height: 24px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: var(--surface);
-  border: 2px solid var(--pink);
-  box-shadow: 0 0 22px rgba(255, 47, 146, 0.44);
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 114, 181, 0.34), transparent 34%),
+    linear-gradient(135deg, rgba(255, 47, 146, 0.22), rgba(139, 92, 246, 0.2)),
+    var(--surface);
+  border: 1px solid rgba(255, 47, 146, 0.72);
+  box-shadow:
+    0 0 0 5px rgba(255, 47, 146, 0.07),
+    0 0 24px rgba(255, 47, 146, 0.34);
   animation: nodeGlow 2.8s ease-in-out infinite;
+  z-index: 1;
+}
+
+.process-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .process-list strong {
@@ -3101,7 +3106,7 @@ main > .section:not(.hero) {
 
   .process-list::before {
     top: 0;
-    left: 11px;
+    left: 21px;
     right: auto;
     bottom: 0;
     width: 2px;
@@ -3113,10 +3118,11 @@ main > .section:not(.hero) {
   }
 
   .process-list li {
-    padding: 0 0 0 46px;
+    min-height: 54px;
+    padding: 0 0 0 62px;
   }
 
-  .process-list li::before {
+  .process-icon {
     top: 0;
     left: 0;
   }
@@ -3563,10 +3569,6 @@ main > .section:not(.hero) {
   .circuit-pulse {
     animation: none;
     opacity: 0;
-  }
-
-  .pointer-trail-canvas {
-    display: none;
   }
 
   .workflow-node,
