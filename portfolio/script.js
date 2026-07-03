@@ -814,6 +814,42 @@ function initBackToTop() {
   });
 }
 
+function initVoltageBackground() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  let idleTimer = null;
+  let frame = null;
+  let latestPointer = { x: 50, y: 42 };
+
+  function fadeVoltage() {
+    document.body.style.setProperty("--voltage-alpha", "0");
+  }
+
+  function updateVoltage() {
+    frame = null;
+    document.body.style.setProperty("--voltage-x", `${latestPointer.x.toFixed(2)}%`);
+    document.body.style.setProperty("--voltage-y", `${latestPointer.y.toFixed(2)}%`);
+    document.body.style.setProperty("--voltage-alpha", "1");
+  }
+
+  document.addEventListener("pointermove", (event) => {
+    latestPointer = {
+      x: (event.clientX / window.innerWidth) * 100,
+      y: (event.clientY / window.innerHeight) * 100
+    };
+
+    if (!frame) {
+      frame = window.requestAnimationFrame(updateVoltage);
+    }
+
+    window.clearTimeout(idleTimer);
+    idleTimer = window.setTimeout(fadeVoltage, 720);
+  });
+
+  document.addEventListener("mouseleave", fadeVoltage);
+  window.addEventListener("blur", fadeVoltage);
+}
+
 function initSectionPointerEffects() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -986,6 +1022,7 @@ function init() {
   initProjectModal();
   initCalendlyPopup();
   initBackToTop();
+  initVoltageBackground();
   initSectionPointerEffects();
   observeReveals();
   byId("year").textContent = new Date().getFullYear();

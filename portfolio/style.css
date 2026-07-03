@@ -37,6 +37,10 @@
   --modal-card-bg: rgba(255, 255, 255, 0.035);
   --modal-scrollbar-track: rgba(255, 255, 255, 0.06);
   --modal-scrollbar-thumb: rgba(255, 114, 181, 0.48);
+  --voltage-hot: rgba(255, 47, 146, 0.42);
+  --voltage-cool: rgba(139, 92, 246, 0.34);
+  --voltage-line: rgba(255, 114, 181, 0.14);
+  --voltage-spark: rgba(255, 255, 255, 0.82);
 }
 
 [data-theme="light"] {
@@ -66,6 +70,10 @@
   --modal-card-bg: rgba(255, 255, 255, 0.78);
   --modal-scrollbar-track: rgba(91, 33, 182, 0.08);
   --modal-scrollbar-thumb: rgba(164, 20, 99, 0.36);
+  --voltage-hot: rgba(164, 20, 99, 0.22);
+  --voltage-cool: rgba(91, 33, 182, 0.2);
+  --voltage-line: rgba(91, 33, 182, 0.08);
+  --voltage-spark: rgba(164, 20, 99, 0.28);
 }
 
 * {
@@ -77,6 +85,10 @@ html {
 }
 
 body {
+  --voltage-x: 50%;
+  --voltage-y: 42%;
+  --voltage-alpha: 0;
+  position: relative;
   margin: 0;
   font-family: var(--body-font);
   background:
@@ -85,6 +97,59 @@ body {
     var(--background);
   color: var(--text-primary);
   transition: background-color 220ms ease, color 220ms ease;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::before {
+  opacity: 0.36;
+  background:
+    radial-gradient(circle at 80% 12%, var(--voltage-cool), transparent 0 26rem),
+    linear-gradient(118deg, transparent 0 32%, var(--voltage-line) 33%, transparent 34% 100%),
+    linear-gradient(62deg, transparent 0 58%, var(--voltage-line) 59%, transparent 60% 100%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: auto, 520px 100%, 620px 100%, 96px 96px, 96px 96px;
+  mix-blend-mode: screen;
+  animation: voltageFieldDrift 18s linear infinite;
+}
+
+body::after {
+  opacity: var(--voltage-alpha);
+  background:
+    radial-gradient(circle at var(--voltage-x) var(--voltage-y), var(--voltage-spark), transparent 0 0.45rem),
+    radial-gradient(circle at var(--voltage-x) var(--voltage-y), var(--voltage-hot), transparent 0 9rem),
+    radial-gradient(circle at calc(var(--voltage-x) + 8%) calc(var(--voltage-y) + 4%), var(--voltage-cool), transparent 0 16rem),
+    conic-gradient(from 45deg at var(--voltage-x) var(--voltage-y), transparent 0 8deg, var(--voltage-line) 9deg 10deg, transparent 11deg 38deg, var(--voltage-line) 39deg 40deg, transparent 41deg 100deg),
+    linear-gradient(112deg, transparent 0 45%, var(--voltage-line) 46%, transparent 47% 100%),
+    linear-gradient(68deg, transparent 0 54%, var(--voltage-line) 55%, transparent 56% 100%);
+  background-size: auto, auto, auto, auto, 460px 100%, 540px 100%;
+  filter: saturate(1.18);
+  mix-blend-mode: screen;
+  transition: opacity 520ms ease;
+}
+
+[data-theme="light"] body::before {
+  opacity: 0.26;
+  mix-blend-mode: multiply;
+}
+
+[data-theme="light"] body::after {
+  mix-blend-mode: multiply;
+}
+
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
 }
 
 body.nav-open,
@@ -2888,6 +2953,15 @@ main > .section:not(.hero) {
   }
 }
 
+@keyframes voltageFieldDrift {
+  from {
+    background-position: 0 0, -520px 0, 620px 0, 0 0, 0 0;
+  }
+  to {
+    background-position: 0 0, 520px 0, -620px 0, 96px 0, 0 96px;
+  }
+}
+
 @keyframes splashText {
   0%, 32% {
     opacity: 0;
@@ -3435,6 +3509,15 @@ main > .section:not(.hero) {
   }
 
   .section::after {
+    display: none;
+  }
+
+  body::before {
+    animation: none;
+    opacity: 0.18;
+  }
+
+  body::after {
     display: none;
   }
 
