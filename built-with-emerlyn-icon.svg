@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Built With Emerlyn monogram">
+  <defs>
+    <linearGradient id="bwe-magenta" x1="12" y1="18" x2="80" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF2DBB"/>
+      <stop offset="1" stop-color="#8A5CFF"/>
+    </linearGradient>
+    <linearGradient id="bwe-violet" x1="12" y1="58" x2="80" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8A5CFF"/>
+      <stop offset="1" stop-color="#6A1BFF"/>
+    </linearGradient>
+    <linearGradient id="bwe-center" x1="14" y1="48" x2="78" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF2DBB"/>
+      <stop offset="0.55" stop-color="#8A5CFF"/>
+      <stop offset="1" stop-color="#6A1BFF"/>
+    </linearGradient>
+    <filter id="bwe-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .bwe-path {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 6;
+        stroke-dasharray: 120;
+        stroke-dashoffset: 120;
+        animation: bweTrace 1.55s ease forwards;
+      }
+      .bwe-upper { stroke: url(#bwe-magenta); animation-delay: 0.08s; }
+      .bwe-center { stroke: url(#bwe-center); animation-delay: 0.28s; }
+      .bwe-lower { stroke: url(#bwe-violet); animation-delay: 0.48s; }
+      .bwe-node {
+        opacity: 0;
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: bweNode 1.55s ease forwards;
+      }
+      .bwe-node:nth-of-type(1) { animation-delay: 0.12s; }
+      .bwe-node:nth-of-type(2) { animation-delay: 0.38s; }
+      .bwe-node:nth-of-type(3) { animation-delay: 0.58s; }
+      .bwe-arrow {
+        fill: none;
+        stroke: url(#bwe-center);
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 6;
+        stroke-dasharray: 40;
+        stroke-dashoffset: 40;
+        animation: bweTrace 1.2s ease forwards 0.42s;
+      }
+      @keyframes bweTrace {
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes bweNode {
+        0%, 18% { opacity: 0; transform: scale(0.7); }
+        38%, 100% { opacity: 1; transform: scale(1); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .bwe-path,
+        .bwe-arrow {
+          animation: none;
+          stroke-dashoffset: 0;
+        }
+        .bwe-node {
+          animation: none;
+          opacity: 1;
+        }
+      }
+    </style>
+  </defs>
+  <g filter="url(#bwe-glow)">
+    <path class="bwe-path bwe-upper" d="M18 24H42C50 24 54 28 54 36V39H72"/>
+    <path class="bwe-path bwe-center" d="M18 48H64"/>
+    <path class="bwe-arrow" d="M60 38L72 48L60 58"/>
+    <path class="bwe-path bwe-lower" d="M18 72H42C50 72 54 68 54 60V57H72"/>
+    <circle class="bwe-node" cx="18" cy="24" r="5" fill="#FF2DBB"/>
+    <circle class="bwe-node" cx="18" cy="48" r="5" fill="#FF2DBB"/>
+    <circle class="bwe-node" cx="18" cy="72" r="5" fill="#8A5CFF"/>
+    <circle class="bwe-node" cx="72" cy="39" r="4" fill="#8A5CFF"/>
+    <circle class="bwe-node" cx="72" cy="57" r="4" fill="#6A1BFF"/>
+  </g>
+</svg>
