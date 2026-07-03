@@ -2,38 +2,49 @@ const toolCategories = [
   {
     title: "Automation Platforms",
     tools: [
-      { name: "n8n", icon: "assets/tools/n8n.png", use: "Builds multi-step workflows and custom logic." },
-      { name: "Zapier", icon: "assets/tools/zapier.png", use: "Connects form, email, CRM, and notification tasks." },
-      { name: "Make.com", icon: "assets/tools/make.com", use: "Designs visual scenarios for routing and updates." },
-      { name: "GoHighLevel", icon: "assets/tools/ghl.png", use: "Supports CRM, forms, calendars, and follow-up flows." }
+      { name: "n8n", icon: "assets/tools/new-logo/n8n.png", use: "Builds multi-step workflows and custom logic." },
+      { name: "Zapier", icon: "assets/tools/new-logo/zapier.png", use: "Connects form, email, CRM, and notification tasks." },
+      { name: "Make.com", icon: "assets/tools/new-logo/makecom.svg", use: "Designs visual scenarios for routing and updates." },
+      { name: "GoHighLevel", icon: "assets/tools/new-logo/ghl.jpeg", use: "Supports CRM, forms, calendars, and follow-up flows." },
+      { name: "Webhook", icon: "assets/tools/new-logo/webhook.png", use: "Connects custom app events and automation triggers." },
+      { name: "Systeme.io", icon: "assets/tools/new-logo/systemio.jpeg", use: "Supports funnel and marketing automation workflows." }
     ]
   },
   {
     title: "CRM and Databases",
     tools: [
-      { name: "Airtable", icon: "assets/tools/airtable.png", use: "Organizes leads, records, and project information." },
-      { name: "Google Sheets", icon: "assets/tools/google-sheets.png", use: "Tracks operations data and workflow logs." },
-      { name: "GoHighLevel CRM", icon: "assets/tools/ghl.png", use: "Keeps contact records and pipeline activity in one place." }
+      { name: "Airtable", icon: "assets/tools/new-logo/airtable.png", use: "Organizes leads, records, and project information." },
+      { name: "Google Sheets", icon: "assets/tools/new-logo/sheets.png", use: "Tracks operations data and workflow logs." },
+      { name: "Notion", icon: "assets/tools/new-logo/notion.png", use: "Documents systems, tasks, and project details." },
+      { name: "Trello", icon: "assets/tools/new-logo/trello.png", use: "Supports task tracking workflows." }
     ]
   },
   {
     title: "Communication",
     tools: [
-      { name: "Gmail", icon: "assets/tools/gmail.png", use: "Sends confirmations, alerts, and email-based updates." },
-      { name: "Slack", icon: "assets/tools/slack.png", use: "Notifies teams when leads or workflow events need attention." },
-      { name: "Telegram", icon: "assets/tools/telegram.png", use: "Delivers quick operational alerts to mobile teams." },
-      { name: "Discord", icon: "assets/tools/discord.png", use: "Supports community updates and moderation workflows." }
+      { name: "Gmail", icon: "assets/tools/new-logo/gmail.png", use: "Sends confirmations, alerts, and email-based updates." },
+      { name: "Slack", icon: "assets/tools/new-logo/slacks.png", use: "Notifies teams when leads or workflow events need attention." },
+      { name: "Telegram", icon: "assets/tools/new-logo/telegram.png", use: "Delivers quick operational alerts to mobile teams." },
+      { name: "Google Meet", icon: "assets/tools/new-logo/gmeet.png", use: "Supports client calls and workflow handover." },
+      { name: "Google Calendar", icon: "assets/tools/new-logo/gcalendar.png", use: "Supports booking and schedule automation." },
+      { name: "Zoom", icon: "assets/tools/new-logo/zoom.png", use: "Supports discovery calls and project meetings." }
     ]
   },
   {
     title: "AI and Productivity",
     tools: [
-      { name: "ChatGPT", icon: "assets/tools/ChatGPT.png", use: "Assists with drafting, classification, and workflow planning." },
-      { name: "Gemini", icon: "", use: "Supports AI-assisted document and message processing. Exact logo asset needed." },
-      { name: "Google Workspace", icon: "assets/tools/google-docs.png", use: "Connects docs, drive files, email, and shared records." },
-      { name: "Canva", icon: "assets/tools/canva.png", use: "Creates simple branded assets and workflow documentation." },
-      { name: "Trello", icon: "", use: "Supports task tracking workflows. Exact logo asset needed." },
-      { name: "Asana", icon: "", use: "Supports task coordination. Exact logo asset needed." }
+      { name: "ChatGPT", icon: "assets/tools/new-logo/gpt.png", use: "Assists with drafting, classification, and workflow planning." },
+      { name: "Gemini", icon: "assets/tools/new-logo/gemini.png", use: "Supports AI-assisted document and message processing." },
+      { name: "Claude AI", icon: "assets/tools/new-logo/caludeai.png", use: "Supports writing, analysis, and workflow planning." },
+      { name: "Google Docs", icon: "assets/tools/new-logo/docs.png", use: "Supports documentation and shared process notes." },
+      { name: "Google Drive", icon: "assets/tools/new-logo/gdrive.png", use: "Stores files used in automation workflows." },
+      { name: "Canva", icon: "assets/tools/new-logo/canva.png", use: "Creates simple branded assets and workflow documentation." },
+      { name: "Figma", icon: "assets/tools/new-logo/figma.png", use: "Supports interface planning and visual references." },
+      { name: "Lovable", icon: "assets/tools/new-logo/lovable.png", use: "Supports fast app and interface prototyping." },
+      { name: "VS Code", icon: "assets/tools/new-logo/vscode.png", use: "Supports website and automation code editing." },
+      { name: "Vercel", icon: "assets/tools/new-logo/vercel.png", use: "Supports front-end deployment workflows." },
+      { name: "Reddit", icon: "assets/tools/new-logo/reddit.png", use: "Supports community research and marketing workflows." },
+      { name: "X.com", icon: "assets/tools/new-logo/xcom.jpeg", use: "Supports social monitoring and marketing workflows." }
     ]
   }
 ];
@@ -151,6 +162,7 @@ function renderTools() {
       ${logoSet.map((tool) => `
         <div class="tool-logo" title="${sanitize(tool.name)}" aria-label="${sanitize(tool.name)}">
           ${tool.icon ? `<img src="${sanitize(tool.icon)}" alt="${sanitize(tool.name)} logo" loading="lazy" width="600" height="600">` : `<span class="tool-icon-placeholder" aria-hidden="true">${sanitize(tool.name.charAt(0))}</span>`}
+          <span>${sanitize(tool.name)}</span>
         </div>
       `).join("")}
     </div>
