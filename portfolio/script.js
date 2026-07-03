@@ -90,6 +90,30 @@ const projects = [
     status: "Practice or portfolio project. Final project status still needs confirmation."
   },
   {
+    id: "ai-agent-scheduling",
+    title: "AI Agent Scheduling Setup",
+    category: "Telegram Booking Assistant and Zapier AI Agent Workflow",
+    filter: "zapier",
+    description: "An AI-powered appointment scheduling system that automates bookings, rescheduling, cancellations, reminders, and client communication through Telegram.",
+    tools: ["Zapier AI Agent", "Telegram", "Airtable", "Google Calendar", "Gmail", "Slack"],
+    image: "assets/projects/aiagent-scheduling-setup/tg-aiagent.png",
+    imageAlt: "Telegram booking assistant and Zapier AI Agent scheduling workflow preview",
+    problem: "Manual appointment scheduling can create booking conflicts, slow client communication, and extra work for internal teams.",
+    solution: "A Zapier AI Agent detects scheduling intent from Telegram, checks client and appointment records, validates details, manages Google Calendar events, and updates the team.",
+    overview: "Client messages move from Telegram intent detection into availability checks, calendar actions, Airtable updates, confirmations, reminders, and internal alerts.",
+    steps: [
+      "Detect booking, rescheduling, or cancellation intent in Telegram",
+      "Check existing client and appointment records",
+      "Validate booking details and calendar availability",
+      "Create, update, or cancel Google Calendar events",
+      "Send confirmations and appointment reminders",
+      "Update Airtable and alert the internal team"
+    ],
+    errorHandling: "Use missing-detail checks, calendar conflict validation, existing-record matching, and team alerts when a scheduling request needs manual review.",
+    value: "Reduced manual scheduling, prevented booking conflicts, and created a faster, more organized appointment experience for clients and staff.",
+    status: "Portfolio case study. Client or production status can be updated when confirmed."
+  },
+  {
     id: "email-routing",
     title: "AI Email Classification and Routing",
     category: "Make.com and Gemini AI",
