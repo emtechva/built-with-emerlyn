@@ -48,6 +48,57 @@
   </script>
 </head>
 <body>
+  <div class="ambient-effects" aria-hidden="true">
+    <svg class="circuit-layer" viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <defs>
+        <filter id="circuitGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3.5" result="blur"></feGaussianBlur>
+          <feMerge>
+            <feMergeNode in="blur"></feMergeNode>
+            <feMergeNode in="SourceGraphic"></feMergeNode>
+          </feMerge>
+        </filter>
+        <linearGradient id="routeGradientA" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="var(--energy-magenta)"></stop>
+          <stop offset="54%" stop-color="var(--energy-violet)"></stop>
+          <stop offset="100%" stop-color="var(--energy-blue)"></stop>
+        </linearGradient>
+        <linearGradient id="routeGradientB" x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="var(--energy-blue)"></stop>
+          <stop offset="58%" stop-color="var(--energy-violet)"></stop>
+          <stop offset="100%" stop-color="var(--energy-magenta)"></stop>
+        </linearGradient>
+      </defs>
+      <g class="circuit-routes">
+        <path class="circuit-path circuit-path-strong" d="M-80 180 C170 80 260 235 420 185 S680 40 860 146 S1120 318 1520 170"></path>
+        <path class="circuit-path" d="M-60 440 C160 335 280 520 455 430 S730 230 940 338 S1160 555 1500 365"></path>
+        <path class="circuit-path circuit-path-faint" d="M60 850 C250 690 385 790 530 675 S760 470 960 615 S1190 800 1455 610"></path>
+        <path class="circuit-path" d="M125 80 C275 260 385 238 500 360 S655 610 850 530 S1135 330 1380 470"></path>
+        <path class="circuit-path circuit-path-faint" d="M980 -40 C910 165 1020 250 920 390 S760 590 830 760 S1080 965 980 1080"></path>
+        <path class="circuit-path" d="M1280 50 C1160 220 1270 330 1132 442 S870 520 760 690 S610 850 380 920"></path>
+        <path class="circuit-path circuit-path-strong" d="M250 1010 C350 770 255 650 445 555 S720 500 780 342 S750 135 955 20"></path>
+        <path class="circuit-path circuit-path-faint" d="M-120 700 C120 555 210 670 390 585 S610 370 790 430 S965 640 1210 540 S1370 455 1530 520"></path>
+      </g>
+      <g class="circuit-pulses">
+        <path class="circuit-pulse pulse-one" d="M-80 180 C170 80 260 235 420 185 S680 40 860 146 S1120 318 1520 170"></path>
+        <path class="circuit-pulse pulse-two" d="M-60 440 C160 335 280 520 455 430 S730 230 940 338 S1160 555 1500 365"></path>
+        <path class="circuit-pulse pulse-three" d="M1280 50 C1160 220 1270 330 1132 442 S870 520 760 690 S610 850 380 920"></path>
+        <path class="circuit-pulse pulse-four" d="M250 1010 C350 770 255 650 445 555 S720 500 780 342 S750 135 955 20"></path>
+      </g>
+      <g class="circuit-nodes" filter="url(#circuitGlow)">
+        <circle cx="420" cy="185" r="3.5"></circle>
+        <circle cx="860" cy="146" r="4"></circle>
+        <circle cx="455" cy="430" r="3.5"></circle>
+        <circle cx="940" cy="338" r="4.5"></circle>
+        <circle cx="830" cy="760" r="3"></circle>
+        <circle cx="1132" cy="442" r="4"></circle>
+        <circle cx="780" cy="342" r="4"></circle>
+        <circle cx="390" cy="585" r="3.5"></circle>
+      </g>
+    </svg>
+    <canvas class="pointer-trail-canvas"></canvas>
+  </div>
+
   <a class="skip-link" href="#main">Skip to content</a>
 
   <div class="site-splash" data-splash aria-hidden="true">

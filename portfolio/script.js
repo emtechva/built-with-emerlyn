@@ -816,66 +816,207 @@ function initBackToTop() {
 
 function initVoltageBackground() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
 
-  let idleTimer = null;
-  let frame = null;
-  let latestPointer = { x: 50, y: 42 };
+  const canvas = document.querySelector(".pointer-trail-canvas");
+  const context = canvas?.getContext("2d", { alpha: true });
+  if (!canvas || !context) return;
 
-  function fadeVoltage() {
-    document.body.style.setProperty("--voltage-alpha", "0");
+  const points = [];
+  const blooms = [];
+  const maxPoints = 44;
+  const maxBlooms = 18;
+  let width = 0;
+  let height = 0;
+  let pixelRatio = 1;
+  let animationFrame = null;
+  let isRunning = false;
+  let lastPoint = null;
+
+  function isLightTheme() {
+    return document.documentElement.dataset.theme === "light";
   }
 
-  function updateVoltage() {
-    frame = null;
-    document.body.style.setProperty("--voltage-x", `${latestPointer.x.toFixed(2)}%`);
-    document.body.style.setProperty("--voltage-y", `${latestPointer.y.toFixed(2)}%`);
-    document.body.style.setProperty("--voltage-alpha", "1");
+  function resizeCanvas() {
+    pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = Math.round(width * pixelRatio);
+    canvas.height = Math.round(height * pixelRatio);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    context.clearRect(0, 0, width, height);
   }
 
-  document.addEventListener("pointermove", (event) => {
-    latestPointer = {
-      x: (event.clientX / window.innerWidth) * 100,
-      y: (event.clientY / window.innerHeight) * 100
-    };
+  function addBloom(x, y, speed) {
+    if (blooms.length >= maxBlooms) blooms.shift();
+    const count = Math.min(7, Math.max(3, Math.round(speed / 180)));
+    for (let index = 0; index < count; index += 1) {
+      blooms.push({
+        x,
+        y,
+        radius: 3 + Math.random() * 9,
+        life: 1,
+        vx: (Math.random() - 0.5) * 0.85,
+        vy: (Math.random() - 0.5) * 0.85
+      });
+    }
+  }
 
-    if (!frame) {
-      frame = window.requestAnimationFrame(updateVoltage);
+  function addPoint(event) {
+    const now = performance.now();
+    const x = event.clientX;
+    const y = event.clientY;
+
+    if (lastPoint) {
+      const dx = x - lastPoint.x;
+      const dy = y - lastPoint.y;
+      const distance = Math.hypot(dx, dy);
+      const time = Math.max(16, now - lastPoint.time);
+      const speed = (distance / time) * 1000;
+      const directionShift = lastPoint.dx * dx + lastPoint.dy * dy;
+
+      if (speed > 720 && directionShift < -12) {
+        addBloom(x, y, speed);
+      }
     }
 
-    window.clearTimeout(idleTimer);
-    idleTimer = window.setTimeout(fadeVoltage, 720);
-  });
+    points.push({ x, y, age: 0, time: now });
+    if (points.length > maxPoints) points.shift();
 
-  document.addEventListener("mouseleave", fadeVoltage);
-  window.addEventListener("blur", fadeVoltage);
-}
+    lastPoint = {
+      x,
+      y,
+      time: now,
+      dx: lastPoint ? x - lastPoint.x : 0,
+      dy: lastPoint ? y - lastPoint.y : 0
+    };
 
-function initSectionPointerEffects() {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    startLoop();
+  }
 
-  const sections = [...document.querySelectorAll(".section")];
-  const idleTimers = new WeakMap();
+  function drawTrail() {
+    if (document.hidden) {
+      animationFrame = null;
+      isRunning = false;
+      return;
+    }
 
-  sections.forEach((section) => {
-    section.addEventListener("pointermove", (event) => {
-      const rect = section.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * 100;
-      const y = ((event.clientY - rect.top) / rect.height) * 100;
+    const light = isLightTheme();
+    context.globalCompositeOperation = "source-over";
+    context.fillStyle = light ? "rgba(248, 246, 251, 0.17)" : "rgba(5, 3, 8, 0.16)";
+    context.fillRect(0, 0, width, height);
 
-      section.style.setProperty("--pointer-x", `${x.toFixed(2)}%`);
-      section.style.setProperty("--pointer-y", `${y.toFixed(2)}%`);
-      section.style.setProperty("--pointer-alpha", "1");
+    points.forEach((point) => {
+      point.age += 0.028;
+    });
+    while (points.length && points[0].age >= 1) points.shift();
 
-      clearTimeout(idleTimers.get(section));
-      idleTimers.set(section, setTimeout(() => {
-        section.style.setProperty("--pointer-alpha", "0");
-      }, 650));
+    blooms.forEach((bloom) => {
+      bloom.life -= 0.035;
+      bloom.x += bloom.vx;
+      bloom.y += bloom.vy;
+      bloom.radius += 0.16;
+    });
+    while (blooms.length && blooms[0].life <= 0) blooms.shift();
+
+    if (!points.length && !blooms.length) {
+      context.clearRect(0, 0, width, height);
+      animationFrame = null;
+      isRunning = false;
+      return;
+    }
+
+    context.globalCompositeOperation = light ? "source-over" : "lighter";
+
+    blooms.forEach((bloom) => {
+      if (bloom.life <= 0) return;
+      const bloomGradient = context.createRadialGradient(bloom.x, bloom.y, 0, bloom.x, bloom.y, bloom.radius * 5);
+      bloomGradient.addColorStop(0, light ? `rgba(164, 20, 99, ${0.12 * bloom.life})` : `rgba(255, 45, 187, ${0.22 * bloom.life})`);
+      bloomGradient.addColorStop(0.42, light ? `rgba(91, 33, 182, ${0.08 * bloom.life})` : `rgba(138, 92, 255, ${0.18 * bloom.life})`);
+      bloomGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+      context.fillStyle = bloomGradient;
+      context.beginPath();
+      context.arc(bloom.x, bloom.y, bloom.radius * 5, 0, Math.PI * 2);
+      context.fill();
     });
 
-    section.addEventListener("pointerleave", () => {
-      clearTimeout(idleTimers.get(section));
-      section.style.setProperty("--pointer-alpha", "0");
-    });
+    if (points.length > 1) {
+      const recent = points.filter((point) => point.age < 1);
+      if (recent.length > 1) {
+        const alpha = light ? 0.24 : 0.48;
+        const start = recent[0];
+        const end = recent[recent.length - 1];
+        const gradient = context.createLinearGradient(start.x, start.y, end.x, end.y);
+        gradient.addColorStop(0, light ? `rgba(164, 20, 99, ${alpha * 0.3})` : `rgba(255, 45, 187, ${alpha * 0.38})`);
+        gradient.addColorStop(0.52, light ? `rgba(91, 33, 182, ${alpha})` : `rgba(138, 92, 255, ${alpha})`);
+        gradient.addColorStop(1, light ? `rgba(106, 27, 255, ${alpha * 0.5})` : `rgba(106, 27, 255, ${alpha * 0.72})`);
+
+        context.lineCap = "round";
+        context.lineJoin = "round";
+
+        context.strokeStyle = gradient;
+        context.lineWidth = light ? 10 : 16;
+        context.globalAlpha = light ? 0.16 : 0.22;
+        drawSmoothLine(recent);
+        context.stroke();
+
+        context.strokeStyle = gradient;
+        context.lineWidth = light ? 2 : 2.4;
+        context.globalAlpha = 1;
+        drawSmoothLine(recent);
+        context.stroke();
+      }
+    }
+
+    context.globalAlpha = 1;
+
+    if (points.length || blooms.length) {
+      animationFrame = window.requestAnimationFrame(drawTrail);
+      return;
+    }
+
+    animationFrame = null;
+    isRunning = false;
+  }
+
+  function drawSmoothLine(pointSet) {
+    context.beginPath();
+    context.moveTo(pointSet[0].x, pointSet[0].y);
+
+    for (let index = 1; index < pointSet.length - 1; index += 1) {
+      const current = pointSet[index];
+      const next = pointSet[index + 1];
+      const midX = (current.x + next.x) / 2;
+      const midY = (current.y + next.y) / 2;
+      context.quadraticCurveTo(current.x, current.y, midX, midY);
+    }
+
+    const last = pointSet[pointSet.length - 1];
+    context.lineTo(last.x, last.y);
+  }
+
+  function startLoop() {
+    if (isRunning) return;
+    isRunning = true;
+    animationFrame = window.requestAnimationFrame(drawTrail);
+  }
+
+  function stopLoop() {
+    if (animationFrame) window.cancelAnimationFrame(animationFrame);
+    animationFrame = null;
+    isRunning = false;
+    points.length = 0;
+    blooms.length = 0;
+    context.clearRect(0, 0, width, height);
+  }
+
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+  document.addEventListener("pointermove", addPoint, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopLoop();
   });
 }
 
@@ -1023,7 +1164,6 @@ function init() {
   initCalendlyPopup();
   initBackToTop();
   initVoltageBackground();
-  initSectionPointerEffects();
   observeReveals();
   byId("year").textContent = new Date().getFullYear();
 }

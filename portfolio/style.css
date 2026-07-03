@@ -37,10 +37,14 @@
   --modal-card-bg: rgba(255, 255, 255, 0.035);
   --modal-scrollbar-track: rgba(255, 255, 255, 0.06);
   --modal-scrollbar-thumb: rgba(255, 114, 181, 0.48);
-  --voltage-hot: rgba(255, 47, 146, 0.42);
-  --voltage-cool: rgba(139, 92, 246, 0.34);
-  --voltage-line: rgba(255, 114, 181, 0.14);
-  --voltage-spark: rgba(255, 255, 255, 0.82);
+  --energy-magenta: #ff2dbb;
+  --energy-violet: #8a5cff;
+  --energy-purple: #6a1bff;
+  --energy-blue: #4f8cff;
+  --ambient-route-opacity: 0.16;
+  --ambient-route-faint: 0.08;
+  --ambient-route-strong: 0.22;
+  --ambient-pulse-opacity: 0.82;
 }
 
 [data-theme="light"] {
@@ -70,10 +74,14 @@
   --modal-card-bg: rgba(255, 255, 255, 0.78);
   --modal-scrollbar-track: rgba(91, 33, 182, 0.08);
   --modal-scrollbar-thumb: rgba(164, 20, 99, 0.36);
-  --voltage-hot: rgba(164, 20, 99, 0.22);
-  --voltage-cool: rgba(91, 33, 182, 0.2);
-  --voltage-line: rgba(91, 33, 182, 0.08);
-  --voltage-spark: rgba(164, 20, 99, 0.28);
+  --energy-magenta: #a41463;
+  --energy-violet: #5b21b6;
+  --energy-purple: #6a1bff;
+  --energy-blue: #3265c9;
+  --ambient-route-opacity: 0.09;
+  --ambient-route-faint: 0.05;
+  --ambient-route-strong: 0.12;
+  --ambient-pulse-opacity: 0.42;
 }
 
 * {
@@ -85,9 +93,6 @@ html {
 }
 
 body {
-  --voltage-x: 50%;
-  --voltage-y: 42%;
-  --voltage-alpha: 0;
   position: relative;
   margin: 0;
   font-family: var(--body-font);
@@ -99,50 +104,119 @@ body {
   transition: background-color 220ms ease, color 220ms ease;
 }
 
-body::before,
-body::after {
-  content: "";
+.ambient-effects {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
+  contain: layout paint;
 }
 
-body::before {
-  opacity: 0.34;
-  background:
-    radial-gradient(ellipse 32rem 4rem at 74% 18%, transparent 0 58%, var(--voltage-line) 59% 61%, transparent 62%),
-    radial-gradient(ellipse 24rem 3rem at 32% 74%, transparent 0 56%, var(--voltage-line) 57% 59%, transparent 60%),
-    radial-gradient(ellipse 18rem 2.4rem at 88% 62%, transparent 0 54%, var(--voltage-line) 55% 57%, transparent 58%),
-    radial-gradient(circle at 82% 18%, var(--voltage-cool), transparent 0 24rem),
-    radial-gradient(circle at 18% 70%, rgba(255, 47, 146, 0.1), transparent 0 20rem);
-  background-size: 150% 100%, 130% 100%, 120% 100%, auto, auto;
-  mix-blend-mode: screen;
-  animation: voltageFieldDrift 18s linear infinite;
+.circuit-layer,
+.pointer-trail-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-body::after {
-  opacity: var(--voltage-alpha);
-  background:
-    radial-gradient(circle at var(--voltage-x) var(--voltage-y), var(--voltage-spark), transparent 0 0.45rem),
-    radial-gradient(circle at var(--voltage-x) var(--voltage-y), var(--voltage-hot), transparent 0 9rem),
-    radial-gradient(circle at calc(var(--voltage-x) + 8%) calc(var(--voltage-y) + 4%), var(--voltage-cool), transparent 0 16rem),
-    radial-gradient(ellipse 18rem 2.2rem at calc(var(--voltage-x) - 16%) calc(var(--voltage-y) + 7%), transparent 0 56%, var(--voltage-line) 57% 60%, transparent 61%),
-    radial-gradient(ellipse 14rem 1.8rem at calc(var(--voltage-x) + 14%) calc(var(--voltage-y) - 8%), transparent 0 54%, var(--voltage-line) 55% 58%, transparent 59%),
-    radial-gradient(ellipse 11rem 1.5rem at calc(var(--voltage-x) + 3%) calc(var(--voltage-y) + 14%), transparent 0 52%, rgba(255, 255, 255, 0.2) 53% 55%, transparent 56%);
-  background-size: auto;
-  filter: saturate(1.2) blur(0.1px);
-  mix-blend-mode: screen;
-  transition: opacity 520ms ease;
+.circuit-layer {
+  opacity: 0.9;
 }
 
-[data-theme="light"] body::before {
-  opacity: 0.26;
-  mix-blend-mode: multiply;
+.pointer-trail-canvas {
+  opacity: 0.92;
 }
 
-[data-theme="light"] body::after {
-  mix-blend-mode: multiply;
+.circuit-path,
+.circuit-pulse {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.circuit-path {
+  stroke: url("#routeGradientA");
+  stroke-width: 1.15;
+  opacity: var(--ambient-route-opacity);
+  filter: drop-shadow(0 0 7px rgba(255, 45, 187, 0.18));
+}
+
+.circuit-path:nth-child(even) {
+  stroke: url("#routeGradientB");
+}
+
+.circuit-path-faint {
+  opacity: var(--ambient-route-faint);
+}
+
+.circuit-path-strong {
+  opacity: var(--ambient-route-strong);
+}
+
+.circuit-pulse {
+  stroke: url("#routeGradientA");
+  stroke-width: 2.2;
+  opacity: var(--ambient-pulse-opacity);
+  stroke-dasharray: 42 980;
+  filter: url("#circuitGlow");
+  animation: circuitPulseTravel 9s cubic-bezier(0.45, 0, 0.35, 1) infinite;
+}
+
+.pulse-two {
+  stroke: url("#routeGradientB");
+  animation-duration: 11s;
+  animation-delay: -3.5s;
+}
+
+.pulse-three {
+  animation-duration: 12s;
+  animation-delay: -7s;
+}
+
+.pulse-four {
+  stroke: url("#routeGradientB");
+  animation-duration: 10s;
+  animation-delay: -5.5s;
+}
+
+.circuit-nodes circle {
+  fill: var(--energy-magenta);
+  opacity: 0.7;
+}
+
+.circuit-nodes circle:nth-child(even) {
+  fill: var(--energy-blue);
+  opacity: 0.56;
+}
+
+[data-theme="light"] .circuit-layer {
+  opacity: 0.66;
+}
+
+[data-theme="light"] .circuit-path {
+  filter: none;
+}
+
+[data-theme="light"] .pointer-trail-canvas {
+  opacity: 0.76;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pointer-trail-canvas {
+    display: none;
+  }
+
+  .circuit-layer {
+    opacity: 0.48;
+  }
+
+  .circuit-path:nth-child(n + 6),
+  .circuit-pulse:nth-child(n + 3),
+  .circuit-nodes circle:nth-child(n + 6) {
+    display: none;
+  }
 }
 
 .site-header,
@@ -150,6 +224,14 @@ main,
 .site-footer {
   position: relative;
   z-index: 1;
+}
+
+.project-modal {
+  z-index: 80;
+}
+
+.site-splash {
+  z-index: 120;
 }
 
 body.nav-open,
@@ -385,56 +467,10 @@ button {
   isolation: isolate;
   padding: 0;
   overflow: hidden;
-  --pointer-x: 50%;
-  --pointer-y: 50%;
-  --pointer-alpha: 0;
 }
 
 main > .section:not(.hero) {
   padding-block: clamp(3.25rem, 7vw, 5rem);
-}
-
-.section::before,
-.section::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.section::before {
-  opacity: 0.18;
-  background:
-    radial-gradient(ellipse 28rem 3rem at 16% 18%, transparent 0 58%, rgba(255, 47, 146, 0.08) 59% 61%, transparent 62%),
-    radial-gradient(ellipse 22rem 2.6rem at 84% 68%, transparent 0 56%, rgba(139, 92, 246, 0.08) 57% 59%, transparent 60%),
-    radial-gradient(circle at 20% 72%, rgba(255, 47, 146, 0.08), transparent 0 18rem),
-    radial-gradient(circle at 84% 24%, rgba(139, 92, 246, 0.08), transparent 0 20rem);
-  background-size: 130% 100%, 120% 100%, auto, auto;
-  animation: voltageFieldDrift 24s linear infinite;
-}
-
-.section::after {
-  opacity: var(--pointer-alpha);
-  background:
-    radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(255, 47, 146, 0.28), transparent 0 18rem),
-    radial-gradient(circle at calc(var(--pointer-x) + 8%) calc(var(--pointer-y) + 6%), rgba(139, 92, 246, 0.22), transparent 0 22rem);
-  mix-blend-mode: screen;
-  transition: opacity 260ms ease;
-}
-
-[data-theme="light"] .section::before {
-  opacity: 0.2;
-  background:
-    radial-gradient(ellipse 28rem 3rem at 16% 18%, transparent 0 58%, rgba(164, 20, 99, 0.08) 59% 61%, transparent 62%),
-    radial-gradient(ellipse 22rem 2.6rem at 84% 68%, transparent 0 56%, rgba(91, 33, 182, 0.08) 57% 59%, transparent 60%),
-    radial-gradient(circle at 20% 72%, rgba(164, 20, 99, 0.06), transparent 0 18rem),
-    radial-gradient(circle at 84% 24%, rgba(91, 33, 182, 0.06), transparent 0 20rem);
-  background-size: 130% 100%, 120% 100%, auto, auto;
-}
-
-[data-theme="light"] .section::after {
-  mix-blend-mode: multiply;
 }
 
 .section-stack {
@@ -2955,6 +2991,23 @@ main > .section:not(.hero) {
   }
 }
 
+@keyframes circuitPulseTravel {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 1040;
+  }
+  14% {
+    opacity: var(--ambient-pulse-opacity);
+  }
+  72% {
+    opacity: var(--ambient-pulse-opacity);
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
 @keyframes splashText {
   0%, 32% {
     opacity: 0;
@@ -3497,20 +3550,12 @@ main > .section:not(.hero) {
     transform: none;
   }
 
-  .section::before {
+  .circuit-pulse {
     animation: none;
+    opacity: 0;
   }
 
-  .section::after {
-    display: none;
-  }
-
-  body::before {
-    animation: none;
-    opacity: 0.18;
-  }
-
-  body::after {
+  .pointer-trail-canvas {
     display: none;
   }
 
