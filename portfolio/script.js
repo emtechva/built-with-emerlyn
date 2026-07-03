@@ -98,9 +98,19 @@ const projects = [
     tools: ["Zapier AI Agent", "Telegram", "Airtable", "Google Calendar", "Gmail", "Slack"],
     image: "assets/projects/aiagent-scheduling-setup/tg-aiagent.png",
     imageAlt: "Telegram booking assistant and Zapier AI Agent scheduling workflow preview",
+    previewImage: "assets/projects/aiagent-scheduling-setup/tg-aiagent.png",
+    previewImageAlt: "AI Agent Scheduling Setup Telegram booking assistant workflow preview",
+    previewCaption: "Telegram booking assistant connected to Zapier AI Agent, Airtable, Google Calendar, Gmail, and Slack.",
+    type: "Portfolio Project",
+    caseStudyDisplay: "iframe-modal",
     problem: "Manual appointment scheduling can create booking conflicts, slow client communication, and extra work for internal teams.",
     solution: "A Zapier AI Agent detects scheduling intent from Telegram, checks client and appointment records, validates details, manages Google Calendar events, and updates the team.",
     overview: "Client messages move from Telegram intent detection into availability checks, calendar actions, Airtable updates, confirmations, reminders, and internal alerts.",
+    automates: "Booking intent detection, client record checks, appointment validation, calendar event creation, rescheduling, cancellation, confirmations, reminders, Airtable updates, and team alerts.",
+    outcomeLabel: "Scheduling Outcome Paths",
+    outcomePaths: "Booking requests create confirmed appointments, reschedule requests update existing events, cancellation requests remove or update the booking record, and unclear requests are routed for manual review.",
+    contribution: "Designed the scheduling logic, mapped Telegram intent handling, structured the Zapier AI Agent flow, planned record checks, and defined calendar, Airtable, email, and Slack handoffs.",
+    disclosureLabel: "Project Disclosure",
     steps: [
       "Detect booking, rescheduling, or cancellation intent in Telegram",
       "Check existing client and appointment records",
@@ -402,17 +412,19 @@ function openModal(projectId) {
   const modalContent = byId("modalContent");
   const modalCard = modal.querySelector(".modal-card");
   const closeButton = modal.querySelector("[data-close-modal]");
-  const titleId = project.caseStudyDisplay === "iframe-modal" ? "smilecraft-modal-title" : "modalTitle";
+  const usesCaseStudyViewer = project.caseStudyDisplay === "iframe-modal";
+  const titleId = usesCaseStudyViewer ? `${project.id}-modal-title` : "modalTitle";
+  const overviewPanelId = `${project.id}-overview-panel`;
   window.clearTimeout(caseStudyFallbackTimer);
 
-  modalCard.classList.toggle("case-study-modal-card", project.caseStudyDisplay === "iframe-modal");
+  modalCard.classList.toggle("case-study-modal-card", usesCaseStudyViewer);
   modalCard.setAttribute("aria-labelledby", titleId);
 
   if (closeButton) {
-    closeButton.setAttribute("aria-label", project.caseStudyDisplay === "iframe-modal" ? `Close ${project.title} case study` : "Close case study");
+    closeButton.setAttribute("aria-label", usesCaseStudyViewer ? `Close ${project.title} case study` : "Close case study");
   }
 
-  if (project.caseStudyDisplay === "iframe-modal" && project.caseStudyUrl) {
+  if (usesCaseStudyViewer) {
     modalContent.innerHTML = `
       <div class="case-study-viewer">
         <header class="case-study-modal-header">
@@ -422,12 +434,12 @@ function openModal(projectId) {
             <p>${sanitize(project.category)}</p>
           </div>
         </header>
-        <div class="case-study-tabs" role="tablist" aria-label="SmileCraft case study sections">
-          <button class="case-study-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="smilecraft-overview-panel">
+        <div class="case-study-tabs" role="tablist" aria-label="${sanitize(project.title)} case study sections">
+          <button class="case-study-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="${sanitize(overviewPanelId)}">
             Overview
           </button>
         </div>
-        <div class="case-study-overview" id="smilecraft-overview-panel" data-case-study-overview role="tabpanel" aria-label="Overview">
+        <div class="case-study-overview" id="${sanitize(overviewPanelId)}" data-case-study-overview role="tabpanel" aria-label="Overview">
           <figure class="case-study-preview">
             <button
               type="button"
@@ -435,13 +447,13 @@ function openModal(projectId) {
               data-preview-lightbox
               data-preview-src="${sanitize(project.previewImage || project.image)}"
               data-preview-alt="${sanitize(project.previewImageAlt || project.imageAlt || `${project.title} workflow preview`)}"
-              aria-label="Open SmileCraft workflow preview in full screen">
+              aria-label="Open ${sanitize(project.title)} workflow preview in full screen">
               <img
                 src="${sanitize(project.previewImage || project.image)}"
                 alt="${sanitize(project.previewImageAlt || project.imageAlt || `${project.title} workflow preview`)}"
                 loading="eager">
             </button>
-            <figcaption>Complete booking, reminder, appointment outcome, recovery, and nurture automation overview.</figcaption>
+            <figcaption>${sanitize(project.previewCaption || "Complete booking, reminder, appointment outcome, recovery, and nurture automation overview.")}</figcaption>
           </figure>
 
           <div class="case-study-overview-stack">
@@ -449,13 +461,13 @@ function openModal(projectId) {
               ["Project Overview", project.description],
               ["Project Snapshot", `${project.type || "Practice Portfolio Project"} using ${project.category}.`],
               ["Problem and Solution", `${project.problem} ${project.solution}`],
-              ["What the System Automates", "Booking confirmation, timed reminders, CRM stage updates, internal status checks, rebooking, no-show recovery, and patient nurture follow-up."],
+              ["What the System Automates", project.automates || "Booking confirmation, timed reminders, CRM stage updates, internal status checks, rebooking, no-show recovery, and patient nurture follow-up."],
               ["How It Works", project.overview],
-              ["Appointment Outcome Paths", "Attended appointments move toward completion, cancelled appointments enter rescheduling, and no-shows trigger recovery and rebooking follow-up."],
+              [project.outcomeLabel || "Appointment Outcome Paths", project.outcomePaths || "Attended appointments move toward completion, cancelled appointments enter rescheduling, and no-shows trigger recovery and rebooking follow-up."],
               ["Tools Used", project.tools.join(", ")],
-              ["My Contribution", "Mapped the workflow logic, designed the CRM stages, planned the reminder sequence, and structured the outcome-based follow-up paths."],
+              ["My Contribution", project.contribution || "Mapped the workflow logic, designed the CRM stages, planned the reminder sequence, and structured the outcome-based follow-up paths."],
               ["Designed Business Value", project.value],
-              ["Practice Project Disclosure", project.status]
+              [project.disclosureLabel || "Practice Project Disclosure", project.status]
             ].map(([title, content]) => `
               <section class="modal-section">
                 <h3>${sanitize(title)}</h3>
@@ -464,28 +476,32 @@ function openModal(projectId) {
             `).join("")}
           </div>
 
-          <button class="button button-primary case-study-full-button" type="button" data-open-full-case-study>
-            View Full Case Study
-          </button>
+          ${project.caseStudyUrl ? `
+            <button class="button button-primary case-study-full-button" type="button" data-open-full-case-study>
+              View Full Case Study
+            </button>
+          ` : ""}
         </div>
-        <div class="case-study-modal-content" data-case-study-frame-panel hidden>
-          <button class="case-study-back" type="button" data-back-to-overview>Back to overview</button>
-          <div class="case-study-loader" data-case-study-loader hidden>
-            <span class="case-study-spinner" aria-hidden="true"></span>
-            <p>Loading full case study...</p>
+        ${project.caseStudyUrl ? `
+          <div class="case-study-modal-content" data-case-study-frame-panel hidden>
+            <button class="case-study-back" type="button" data-back-to-overview>Back to overview</button>
+            <div class="case-study-loader" data-case-study-loader hidden>
+              <span class="case-study-spinner" aria-hidden="true"></span>
+              <p>Loading full case study...</p>
+            </div>
+            <div class="case-study-fallback" data-case-study-fallback hidden>
+              <p>The full case study could not be displayed inside the portfolio viewer.</p>
+              <a class="button button-primary" href="${sanitize(project.caseStudyUrl)}" target="_blank" rel="noopener noreferrer">Open Full Case Study</a>
+            </div>
+            <iframe
+              data-src="${sanitize(project.caseStudyUrl)}"
+              title="${sanitize(project.title)} full case study"
+              loading="lazy"
+              allow="fullscreen"
+              referrerpolicy="strict-origin-when-cross-origin"
+              data-case-study-frame></iframe>
           </div>
-          <div class="case-study-fallback" data-case-study-fallback hidden>
-            <p>The full case study could not be displayed inside the portfolio viewer.</p>
-            <a class="button button-primary" href="${sanitize(project.caseStudyUrl)}" target="_blank" rel="noopener noreferrer">Open Full Case Study</a>
-          </div>
-          <iframe
-            data-src="${sanitize(project.caseStudyUrl)}"
-            title="${sanitize(project.title)} full case study"
-            loading="lazy"
-            allow="fullscreen"
-            referrerpolicy="strict-origin-when-cross-origin"
-            data-case-study-frame></iframe>
-        </div>
+        ` : ""}
         <div class="case-study-lightbox" data-case-study-lightbox hidden>
           <button class="case-study-lightbox-close" type="button" data-close-lightbox aria-label="Close workflow preview">Close</button>
           <img src="" alt="" data-lightbox-image>
