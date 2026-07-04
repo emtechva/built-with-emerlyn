@@ -181,6 +181,11 @@ const state = {
 const byId = (id) => document.getElementById(id);
 const THEME_STORAGE_KEY = "built-with-emerlyn-theme";
 const SPLASH_STORAGE_KEY = "built-with-emerlyn-splash-seen";
+const ASSESSMENT_STORAGE_KEY = "built-with-emerlyn-assessment-draft";
+const UTM_STORAGE_KEY = "built-with-emerlyn-utm";
+const CALENDLY_URL = "https://calendly.com/emerlyn-techva/30min";
+// Add a Google Apps Script, n8n, Zapier, Make, Formspree, or webhook URL here when the assessment form is ready to receive submissions.
+const WORKFLOW_FORM_ENDPOINT = "";
 let lastProjectTrigger = null;
 let caseStudyFallbackTimer = null;
 let lastPreviewTrigger = null;
@@ -229,33 +234,81 @@ function renderProjects() {
   }
 
   grid.innerHTML = `
-    <div class="project-track">
-      ${filtered.map((project) => `
-        <article class="project-card reveal" data-project-card data-project-id="${sanitize(project.id)}" tabindex="0" role="button" aria-label="Open ${sanitize(project.title)} case study">
-          <div class="project-service">
-            <span>Service</span>
-            <strong>${sanitize(project.serviceLabel || project.category)}</strong>
-          </div>
-          <div class="project-preview">
-            ${project.image ? `<img src="${sanitize(project.image)}" alt="${sanitize(project.imageAlt || `${project.title} preview`)}" loading="lazy" width="1920" height="1080">` : `<span>${sanitize(project.serviceLabel || project.title)}</span>`}
-          </div>
-        </article>
-      `).join("")}
-    </div>
+    ${filtered.map((project) => `
+      <article class="project-card reveal" data-project-card data-project-id="${sanitize(project.id)}" tabindex="0" role="button" aria-label="Open ${sanitize(project.title)} case study">
+        <div class="project-service">
+          <span>Service</span>
+          <strong>${sanitize(project.serviceLabel || project.category)}</strong>
+        </div>
+        <div class="project-preview">
+          ${project.image ? `<img src="${sanitize(project.image)}" alt="${sanitize(project.imageAlt || `${project.title} preview`)}" loading="lazy" width="1920" height="1080">` : `<span>${sanitize(project.serviceLabel || project.title)}</span>`}
+        </div>
+        <div class="project-card-copy">
+          <h3>${sanitize(project.title)}</h3>
+          <p>${sanitize(project.problem || project.description)}</p>
+          <p>${sanitize(project.solution || project.overview)}</p>
+          <div class="tool-tags">${project.tools.map((tool) => `<span>${sanitize(tool)}</span>`).join("")}</div>
+          <span class="project-card-action">View Case Study</span>
+        </div>
+      </article>
+    `).join("")}
   `;
 }
 
 function renderTestimonials() {
-  const railTestimonials = [...testimonials, ...testimonials];
   byId("testimonialList").innerHTML = `
-    <div class="testimonial-track">
-      ${railTestimonials.map((item) => `
-        <article class="testimonial-card proof-card">
-          <img class="testimonial-proof-image" src="${sanitize(item.image)}" alt="${sanitize(item.alt)}" loading="lazy">
-        </article>
-      `).join("")}
-    </div>
+    ${testimonials.map((item) => `
+      <article class="testimonial-card proof-card">
+        <button class="testimonial-preview-button" type="button" data-testimonial-preview="${sanitize(item.image)}" data-testimonial-alt="${sanitize(item.alt)}" aria-label="Open testimonial proof image">
+          <img class="testimonial-proof-image" src="${sanitize(item.image)}" alt="${sanitize(item.alt)}" loading="lazy" decoding="async">
+        </button>
+      </article>
+    `).join("")}
   `;
+}
+
+function trackFunnelEvent(eventName, eventData = {}) {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: eventName,
+    ...eventData
+  });
+}
+
+function initFunnelTracking() {
+  document.addEventListener("click", (event) => {
+    const tracked = event.target.closest("[data-track-event]");
+    if (!tracked) return;
+    trackFunnelEvent(tracked.dataset.trackEvent, {
+      label: tracked.textContent.trim(),
+      href: tracked.getAttribute("href") || ""
+    });
+  });
+}
+
+function initUTMTracking() {
+  const params = new URLSearchParams(window.location.search);
+  const keys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+  const current = {};
+  keys.forEach((key) => {
+    current[key] = params.get(key) || "";
+  });
+
+  try {
+    if (!sessionStorage.getItem(UTM_STORAGE_KEY) && keys.some((key) => current[key])) {
+      sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(current));
+    }
+  } catch (error) {
+    return;
+  }
+}
+
+function getStoredUTM() {
+  try {
+    return JSON.parse(sessionStorage.getItem(UTM_STORAGE_KEY) || "{}");
+  } catch (error) {
+    return {};
+  }
 }
 
 function setTheme(theme) {
@@ -325,7 +378,8 @@ function initSplash() {
     }, reduceMotion ? 90 : 280);
   }
 
-  if (storageGet(SPLASH_STORAGE_KEY) === "true") {
+  if (reduceMotion || storageGet(SPLASH_STORAGE_KEY) === "true") {
+    storageSet(SPLASH_STORAGE_KEY, "true");
     splash.setAttribute("aria-hidden", "true");
     return;
   }
@@ -335,7 +389,7 @@ function initSplash() {
   splash.setAttribute("aria-hidden", "false");
   document.body.classList.add("splash-lock");
 
-  dismissTimer = window.setTimeout(() => finishSplash(true), reduceMotion ? 380 : 3000);
+  dismissTimer = window.setTimeout(() => finishSplash(true), 900);
 
   if (skipButton) {
     skipButton.addEventListener("click", () => finishSplash(true));
@@ -429,6 +483,16 @@ function initFilters() {
   });
 }
 
+function scrollToAssessment() {
+  const heading = byId("assessment-heading");
+  const section = byId("workflow-assessment");
+  const target = heading || section;
+  if (!target) return;
+  target.setAttribute("tabindex", "-1");
+  target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  window.setTimeout(() => target.focus({ preventScroll: true }), 260);
+}
+
 function openModal(projectId) {
   const project = projects.find((item) => item.id === projectId);
   if (!project) return;
@@ -483,16 +547,17 @@ function openModal(projectId) {
 
           <div class="case-study-overview-stack">
             ${[
-              ["Project Overview", project.description],
-              ["Project Snapshot", `${project.type || "Practice Portfolio Project"} using ${project.category}.`],
-              ["Problem and Solution", `${project.problem} ${project.solution}`],
-              ["What the System Automates", project.automates || "Booking confirmation, timed reminders, CRM stage updates, internal status checks, rebooking, no-show recovery, and patient nurture follow-up."],
-              ["How It Works", project.overview],
-              [project.outcomeLabel || "Appointment Outcome Paths", project.outcomePaths || "Attended appointments move toward completion, cancelled appointments enter rescheduling, and no-shows trigger recovery and rebooking follow-up."],
+              ["Project overview", project.description],
+              ["Business problem", project.problem],
+              ["Automation solution", project.solution],
+              ["Workflow map", project.overview],
+              ["Trigger", project.trigger || "A lead, booking request, client message or workflow status change starts the automation."],
+              ["Main actions", project.steps.join(", ")],
+              ["Conditions and routing", project.outcomePaths || "Requests are routed by booking status, missing information, duplicate records, cancellation, rescheduling or manual review needs."],
+              ["Error handling", project.errorHandling],
               ["Tools Used", project.tools.join(", ")],
-              ["My Contribution", project.contribution || "Mapped the workflow logic, designed the CRM stages, planned the reminder sequence, and structured the outcome-based follow-up paths."],
-              ["Designed Business Value", project.value],
-              [project.disclosureLabel || "Practice Project Disclosure", project.status]
+              ["System outcome", project.value],
+              [project.disclosureLabel || "Project status", project.status]
             ].map(([title, content]) => `
               <section class="modal-section">
                 <h3>${sanitize(title)}</h3>
@@ -506,6 +571,10 @@ function openModal(projectId) {
               View Full Case Study
             </button>
           ` : ""}
+          <div class="modal-assessment-cta">
+            <h3>Need a similar system?</h3>
+            <button class="button button-primary" type="button" data-modal-assessment>Get a Free Workflow Assessment</button>
+          </div>
         </div>
         ${project.caseStudyUrl ? `
           <div class="case-study-modal-content" data-case-study-frame-panel hidden>
@@ -560,26 +629,27 @@ function openModal(projectId) {
       </div>
       <p>${sanitize(project.description)}</p>
       ${[
+        ["Project overview", project.description],
         ["Business problem", project.problem],
-        ["Proposed solution", project.solution],
-        ["Workflow overview", project.overview],
-        ["Tools and integrations", project.tools.join(", ")],
+        ["Automation solution", project.solution],
+        ["Workflow map", project.overview],
+        ["Trigger", project.trigger || "A lead, booking request, client message or workflow status change starts the automation."],
+        ["Main actions", project.steps.join(", ")],
+        ["Conditions and routing", project.outcomePaths || "Requests are routed by workflow status, missing information, duplicate records or manual review needs."],
         ["Error handling", project.errorHandling],
-        ["Business value", project.value],
-        ["Project status", project.status],
-        ["Screenshots", "Screenshot assets have not been added yet."]
+        ["Tools used", project.tools.join(", ")],
+        ["System outcome", project.value],
+        ["Project status", project.status]
       ].map(([title, content]) => `
         <section class="modal-section">
           <h3>${sanitize(title)}</h3>
           <p>${sanitize(content)}</p>
         </section>
       `).join("")}
-      <section class="modal-section">
-        <h3>Main automation steps</h3>
-        <ol>
-          ${project.steps.map((step) => `<li>${sanitize(step)}</li>`).join("")}
-        </ol>
-      </section>
+      <div class="modal-assessment-cta">
+        <h3>Need a similar system?</h3>
+        <button class="button button-primary" type="button" data-modal-assessment>Get a Free Workflow Assessment</button>
+      </div>
     </div>
   `;
   }
@@ -587,6 +657,7 @@ function openModal(projectId) {
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
+  trackFunnelEvent("case_study_opened", { project: project.id, title: project.title });
   if (closeButton) {
     closeButton.focus({ preventScroll: true });
   } else {
@@ -720,6 +791,13 @@ function initProjectModal() {
       return;
     }
 
+    if (event.target.closest("[data-modal-assessment]")) {
+      trackFunnelEvent("case_study_assessment_clicked");
+      closeModal();
+      window.setTimeout(scrollToAssessment, 80);
+      return;
+    }
+
     const trigger = event.target.closest("[data-project-card]");
     if (trigger) {
       lastProjectTrigger = trigger;
@@ -834,6 +912,7 @@ function initCalendlyPopup() {
 
       try {
         await loadCalendlyScript();
+        trackFunnelEvent("calendly_opened", { url });
         if (window.Calendly && typeof window.Calendly.initPopupWidget === "function") {
           window.Calendly.initPopupWidget({ url });
           return;
@@ -905,6 +984,218 @@ function initBackToTop() {
   if (!button) return;
   button.addEventListener("click", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+function getAssessmentPayload(form) {
+  const data = new FormData(form);
+  const utm = getStoredUTM();
+  return {
+    timestamp: new Date().toISOString(),
+    source_page: window.location.href,
+    referrer: document.referrer || "",
+    utm_source: utm.utm_source || "",
+    utm_medium: utm.utm_medium || "",
+    utm_campaign: utm.utm_campaign || "",
+    utm_content: utm.utm_content || "",
+    utm_term: utm.utm_term || "",
+    business_name: data.get("business_name") || "",
+    business_type: data.get("business_type") || "",
+    primary_bottleneck: data.get("primary_bottleneck") || "",
+    process_description: data.get("process_description") || "",
+    current_tools: data.getAll("current_tools"),
+    weekly_volume: data.get("weekly_volume") || "",
+    desired_outcome: data.get("desired_outcome") || "",
+    current_delays: data.get("current_delays") || "",
+    full_name: data.get("full_name") || "",
+    email: data.get("email") || "",
+    phone_or_telegram: data.get("phone_or_telegram") || "",
+    preferred_contact_method: data.get("preferred_contact_method") || "",
+    timeline: data.get("timeline") || "",
+    consent: data.get("consent") === "true"
+  };
+}
+
+function initAssessmentForm() {
+  const form = byId("workflowAssessmentForm");
+  if (!form) return;
+
+  const steps = [...form.querySelectorAll("[data-assessment-step]")];
+  const prevButton = form.querySelector("[data-assessment-prev]");
+  const nextButton = form.querySelector("[data-assessment-next]");
+  const submitButton = form.querySelector("[data-assessment-submit]");
+  const status = byId("assessmentStatus");
+  const live = byId("formLiveRegion");
+  const fallback = form.querySelector("[data-assessment-fallback]");
+  const stepStatus = form.querySelector("[data-step-status]");
+  const progressBar = form.querySelector("[data-progress-bar]");
+  let currentStep = 0;
+  let started = false;
+  let pending = false;
+
+  function saveDraft() {
+    try {
+      localStorage.setItem(ASSESSMENT_STORAGE_KEY, JSON.stringify(getAssessmentPayload(form)));
+    } catch (error) {
+      return;
+    }
+  }
+
+  function restoreDraft() {
+    let draft;
+    try {
+      draft = JSON.parse(localStorage.getItem(ASSESSMENT_STORAGE_KEY) || "{}");
+    } catch (error) {
+      return;
+    }
+    Object.entries(draft).forEach(([key, value]) => {
+      if (key === "current_tools" && Array.isArray(value)) {
+        value.forEach((tool) => {
+          const checkbox = form.querySelector(`input[name="current_tools"][value="${CSS.escape(tool)}"]`);
+          if (checkbox) checkbox.checked = true;
+        });
+        return;
+      }
+      const field = form.elements[key];
+      if (!field) return;
+      if (field instanceof RadioNodeList) {
+        const option = [...field].find((item) => item.value === value);
+        if (option) option.checked = true;
+      } else if (field.type === "checkbox") {
+        field.checked = Boolean(value);
+      } else {
+        field.value = value;
+      }
+    });
+  }
+
+  function showStatus(message, type = "info") {
+    status.textContent = message;
+    status.dataset.status = type;
+    if (live) live.textContent = message;
+  }
+
+  function showStep(index) {
+    currentStep = Math.max(0, Math.min(index, steps.length - 1));
+    steps.forEach((step, stepIndex) => {
+      const isActive = stepIndex === currentStep;
+      step.hidden = !isActive;
+      step.classList.toggle("is-active", isActive);
+    });
+    prevButton.hidden = currentStep === 0;
+    nextButton.hidden = currentStep === steps.length - 1;
+    submitButton.hidden = currentStep !== steps.length - 1;
+    if (stepStatus) stepStatus.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+    if (progressBar) progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
+    showStatus("");
+  }
+
+  function validateStep() {
+    const step = steps[currentStep];
+    const requiredFields = [...step.querySelectorAll("[required]")];
+    const invalid = requiredFields.find((field) => !field.checkValidity());
+    const isToolsStep = step.dataset.assessmentStep === "3";
+
+    if (isToolsStep && !form.querySelector('input[name="current_tools"]:checked')) {
+      showStatus("Please choose at least one tool currently involved in the process.", "error");
+      form.querySelector('input[name="current_tools"]')?.focus();
+      return false;
+    }
+
+    if (invalid) {
+      const label = step.querySelector(`label[for="${invalid.id}"]`);
+      showStatus(`${label ? label.textContent.replace("Required", "").trim() : "This field"} is required.`, "error");
+      invalid.focus();
+      return false;
+    }
+    return true;
+  }
+
+  async function submitAssessment() {
+    if (pending || !validateStep()) return;
+    const payload = getAssessmentPayload(form);
+    saveDraft();
+
+    if (!WORKFLOW_FORM_ENDPOINT) {
+      showStatus("The assessment form is ready, but the submission endpoint still needs to be connected. You may continue by booking a discovery call or emailing your workflow details.", "warning");
+      fallback.hidden = false;
+      trackFunnelEvent("assessment_submission_failed", { reason: "endpoint_not_configured" });
+      return;
+    }
+
+    pending = true;
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting...";
+
+    try {
+      const response = await fetch(WORKFLOW_FORM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error("Submission failed");
+      trackFunnelEvent("assessment_submitted");
+      form.innerHTML = `
+        <div class="assessment-success" role="status">
+          <h3>Your workflow assessment has been received</h3>
+          <p>The next step is a short discovery call where we can review your current process and identify the most practical automation starting point.</p>
+          <a class="button button-primary" href="${CALENDLY_URL}" target="_blank" rel="noreferrer" data-calendly-popup>Book Your Discovery Call</a>
+        </div>
+      `;
+      initCalendlyPopup();
+    } catch (error) {
+      showStatus("The assessment could not be sent. Your answers are still saved here. Please retry or email your workflow details.", "error");
+      fallback.hidden = false;
+      trackFunnelEvent("assessment_submission_failed", { reason: "request_failed" });
+    } finally {
+      pending = false;
+      submitButton.disabled = false;
+      submitButton.textContent = "Submit My Workflow Assessment";
+    }
+  }
+
+  restoreDraft();
+  form.addEventListener("input", () => {
+    if (!started) {
+      started = true;
+      trackFunnelEvent("assessment_started");
+    }
+    saveDraft();
+  });
+  form.addEventListener("change", saveDraft);
+  nextButton.addEventListener("click", () => {
+    if (!validateStep()) return;
+    trackFunnelEvent("assessment_step_completed", { step: currentStep + 1 });
+    showStep(currentStep + 1);
+  });
+  prevButton.addEventListener("click", () => showStep(currentStep - 1));
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    submitAssessment();
+  });
+  form.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && event.target.tagName !== "TEXTAREA" && currentStep < steps.length - 1) {
+      event.preventDefault();
+      nextButton.click();
+    }
+  });
+  showStep(0);
+}
+
+function initFAQ() {
+  const list = document.querySelector("[data-faq-list]");
+  if (!list) return;
+  list.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    const panel = button.nextElementSibling;
+    const isOpen = button.getAttribute("aria-expanded") === "true";
+    [...list.querySelectorAll("button")].forEach((item) => {
+      item.setAttribute("aria-expanded", "false");
+      if (item.nextElementSibling) item.nextElementSibling.hidden = true;
+    });
+    button.setAttribute("aria-expanded", String(!isOpen));
+    if (panel) panel.hidden = isOpen;
   });
 }
 
@@ -1040,16 +1331,19 @@ function initServicesCarousel() {
 }
 
 function init() {
+  initUTMTracking();
+  initFunnelTracking();
   initSplash();
   renderTools();
   renderProjects();
   renderTestimonials();
-  initServicesCarousel();
   initTheme();
   initNavigation();
   initFilters();
   initProjectModal();
   initCalendlyPopup();
+  initAssessmentForm();
+  initFAQ();
   initBackToTop();
   initDepthTilt();
   observeReveals();
