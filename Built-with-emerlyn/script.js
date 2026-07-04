@@ -423,6 +423,7 @@ function initFilters() {
       state.activeFilter = button.dataset.filter;
       updateButtons(button);
       renderProjects();
+      initDepthTilt();
       observeReveals();
     });
   });
@@ -870,6 +871,35 @@ function observeReveals() {
   elements.forEach((element) => revealObserver.observe(element));
 }
 
+function initDepthTilt() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+
+  const tiltItems = [
+    ...document.querySelectorAll(".portrait-ring, .about-workflow-card, .project-card, .contact-card")
+  ];
+
+  tiltItems.forEach((item) => {
+    if (item.dataset.depthTiltBound === "true") return;
+    item.dataset.depthTiltBound = "true";
+
+    item.addEventListener("pointermove", (event) => {
+      const rect = item.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5;
+      const y = (event.clientY - rect.top) / rect.height - 0.5;
+      const maxTilt = item.classList.contains("portrait-ring") ? 5 : 3.5;
+
+      item.style.setProperty("--tilt-x", `${(-y * maxTilt).toFixed(2)}deg`);
+      item.style.setProperty("--tilt-y", `${(x * maxTilt).toFixed(2)}deg`);
+    });
+
+    item.addEventListener("pointerleave", () => {
+      item.style.removeProperty("--tilt-x");
+      item.style.removeProperty("--tilt-y");
+    });
+  });
+}
+
 function initBackToTop() {
   const button = document.querySelector("[data-back-to-top]");
   if (!button) return;
@@ -1021,6 +1051,7 @@ function init() {
   initProjectModal();
   initCalendlyPopup();
   initBackToTop();
+  initDepthTilt();
   observeReveals();
   byId("year").textContent = new Date().getFullYear();
 }

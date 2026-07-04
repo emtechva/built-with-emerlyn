@@ -45,6 +45,10 @@
   --ambient-route-faint: 0.035;
   --ambient-route-strong: 0.1;
   --ambient-pulse-opacity: 0.34;
+  --depth-shadow: 0 34px 90px rgba(5, 3, 8, 0.42);
+  --depth-shadow-strong: 0 46px 120px rgba(5, 3, 8, 0.56);
+  --depth-edge: rgba(255, 255, 255, 0.18);
+  --depth-glow: rgba(255, 47, 146, 0.2);
 }
 
 [data-theme="light"] {
@@ -82,6 +86,10 @@
   --ambient-route-faint: 0.025;
   --ambient-route-strong: 0.065;
   --ambient-pulse-opacity: 0.2;
+  --depth-shadow: 0 28px 70px rgba(69, 32, 92, 0.14);
+  --depth-shadow-strong: 0 38px 92px rgba(69, 32, 92, 0.2);
+  --depth-edge: rgba(255, 255, 255, 0.74);
+  --depth-glow: rgba(164, 20, 99, 0.12);
 }
 
 * {
@@ -102,6 +110,24 @@ body {
     var(--background);
   color: var(--text-primary);
   transition: background-color 220ms ease, color 220ms ease;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(255, 255, 255, 0.035) 40%, transparent 43%),
+    linear-gradient(245deg, transparent 0 48%, rgba(139, 92, 246, 0.035) 50%, transparent 53%);
+  opacity: 0.52;
+  mix-blend-mode: screen;
+}
+
+[data-theme="light"] body::before {
+  opacity: 0.24;
+  mix-blend-mode: multiply;
 }
 
 .ambient-effects {
@@ -203,6 +229,15 @@ body {
   .circuit-pulse:nth-child(n + 3),
   .circuit-nodes circle:nth-child(n + 6) {
     display: none;
+  }
+
+  .portrait-ring,
+  .about-workflow-card,
+  .project-card,
+  .contact-card,
+  .tool-rail,
+  .testimonial-card {
+    transform: none;
   }
 }
 
@@ -454,6 +489,8 @@ button {
   isolation: isolate;
   padding: 0;
   overflow: hidden;
+  perspective: 1400px;
+  transform-style: preserve-3d;
 }
 
 main > .section:not(.hero) {
@@ -869,10 +906,12 @@ main > .section:not(.hero) {
   grid-template-columns: minmax(560px, 1.24fr) minmax(300px, 0.76fr);
   gap: clamp(30px, 5vw, 72px);
   align-items: center;
+  perspective: 1400px;
 }
 
 .hero-copy {
   max-width: 780px;
+  transform: translateZ(26px);
 }
 
 .eyebrow {
@@ -891,6 +930,9 @@ main > .section:not(.hero) {
   font-size: clamp(2.35rem, 3.35vw, 3.65rem);
   line-height: 1.04;
   letter-spacing: 0;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 42px rgba(5, 3, 8, 0.34);
 }
 
 .hero h1 span {
@@ -922,6 +964,7 @@ main > .section:not(.hero) {
   min-height: clamp(380px, 42vw, 560px);
   margin: 0;
   isolation: isolate;
+  transform-style: preserve-3d;
 }
 
 .portrait-orbit {
@@ -963,6 +1006,7 @@ main > .section:not(.hero) {
 }
 
 .portrait-ring {
+  position: relative;
   width: min(72vw, 410px);
   aspect-ratio: 1;
   padding: clamp(8px, 1.4vw, 14px);
@@ -975,6 +1019,23 @@ main > .section:not(.hero) {
     0 34px 90px var(--shadow),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(16px);
+  transform:
+    rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg))
+    translateZ(34px);
+  transform-style: preserve-3d;
+  transition: transform 260ms ease, box-shadow 260ms ease;
+}
+
+.portrait-ring::after {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(255, 47, 146, 0.24), rgba(139, 92, 246, 0.08), transparent 70%);
+  filter: blur(22px);
+  transform: translateZ(-42px) scale(1.08);
 }
 
 .portrait-ring img {
@@ -1050,6 +1111,23 @@ main > .section:not(.hero) {
     rgba(35, 18, 48, 0.74);
   box-shadow: 0 28px 70px var(--shadow);
   padding: 20px;
+  transform:
+    rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg))
+    translateZ(18px);
+  transform-style: preserve-3d;
+  transition: transform 260ms ease, box-shadow 260ms ease, border-color 220ms ease;
+}
+
+.about-workflow-card::after {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 47, 146, 0.18), rgba(139, 92, 246, 0.08));
+  filter: blur(28px);
+  transform: translateZ(-34px);
 }
 
 .workflow-card-top {
@@ -1895,6 +1973,8 @@ main > .section:not(.hero) {
     0 20px 48px var(--shadow),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  transform: perspective(1000px) rotateX(2deg) translateZ(18px);
+  transform-style: preserve-3d;
 }
 
 [data-theme="light"] .tool-rail {
@@ -2294,7 +2374,12 @@ main > .section:not(.hero) {
   background: var(--surface-raised);
   box-shadow: 0 20px 52px rgba(5, 3, 8, 0.18);
   cursor: pointer;
-  transform: scale(1);
+  transform:
+    rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg))
+    translateZ(0)
+    scale(1);
+  transform-style: preserve-3d;
   transition:
     transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
     border-color 220ms ease,
@@ -2319,9 +2404,15 @@ main > .section:not(.hero) {
 .project-card:focus-visible {
   border-color: rgba(255, 47, 146, 0.45);
   box-shadow:
+    var(--depth-shadow-strong),
     0 24px 68px rgba(233, 22, 140, 0.2),
     0 0 0 1px rgba(255, 47, 146, 0.12);
-  transform: translateY(-4px) scale(1.025);
+  transform:
+    rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg))
+    translateY(-6px)
+    translateZ(28px)
+    scale(1.025);
 }
 
 .project-card:hover::after,
@@ -2351,6 +2442,7 @@ main > .section:not(.hero) {
   border-style: solid;
   background: #0a0a0f;
   transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+  transform: translateZ(18px);
 }
 
 .project-preview img {
@@ -2365,7 +2457,7 @@ main > .section:not(.hero) {
 .project-card:focus-visible .project-preview {
   border-color: rgba(255, 47, 146, 0.38);
   box-shadow: 0 14px 34px rgba(233, 22, 140, 0.16);
-  transform: translateY(-2px);
+  transform: translateY(-2px) translateZ(22px);
 }
 
 .project-card:hover .project-preview img,
@@ -2381,6 +2473,7 @@ main > .section:not(.hero) {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.035);
+  transform: translateZ(28px);
 }
 
 .project-service span {
@@ -2428,6 +2521,8 @@ main > .section:not(.hero) {
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid var(--border);
+  box-shadow: var(--depth-shadow);
+  transform: perspective(900px) rotateX(1.5deg);
 }
 
 .proof-card {
@@ -2515,7 +2610,19 @@ main > .section:not(.hero) {
   background:
     radial-gradient(circle at 20% 0%, rgba(255, 47, 146, 0.14), transparent 18rem),
     var(--surface-raised);
-  box-shadow: 0 22px 54px rgba(139, 92, 246, 0.08);
+  box-shadow: var(--depth-shadow);
+  transform:
+    rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg))
+    translateZ(20px);
+  transform-style: preserve-3d;
+  transition: transform 260ms ease, box-shadow 260ms ease, border-color 220ms ease;
+}
+
+.contact-card:hover,
+.contact-card:focus-within {
+  border-color: rgba(255, 47, 146, 0.5);
+  box-shadow: var(--depth-shadow-strong), 0 0 52px rgba(255, 47, 146, 0.12);
 }
 
 [data-theme="light"] .contact-card {
@@ -3672,6 +3779,15 @@ main > .section:not(.hero) {
   .reveal {
     opacity: 1;
     transform: none;
+  }
+
+  .portrait-ring,
+  .about-workflow-card,
+  .project-card,
+  .contact-card,
+  .tool-rail,
+  .testimonial-card {
+    transform: none !important;
   }
 
   .circuit-pulse {
